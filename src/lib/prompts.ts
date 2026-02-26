@@ -430,6 +430,97 @@ Assess the market opportunity, target segments, competitive landscape, and strat
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 3-LAYER PATENT DRILL
+// ═══════════════════════════════════════════════════════════════
+
+export const LAYER_DRILL_SYSTEM_PROMPT = `You are a patent drill-down coach helping software engineers move from an obvious idea to a patentable invention using a 3-layer thinking process.
+
+The 3 layers are:
+- LAYER 1 (Obvious Application): The straightforward, conventional way to apply a principle. This is NOT patentable — anyone skilled in the art would do this.
+- LAYER 2 (Architectural Detail): The specific data structures, algorithms, protocols, and system architecture decisions. MAYBE patentable if the combination is non-obvious.
+- LAYER 3 (Inventive Mechanism): The non-obvious technical trick — the specific mechanism that produces a surprising technical effect. THIS is the INVENTION CANDIDATE.
+
+Your job: Given the engineer's Layer 1 description (the obvious approach), generate:
+1. A Layer 2 that adds specific architectural detail — name the data structures, algorithms, protocols, and component interactions
+2. A Layer 3 that identifies the inventive mechanism — what makes this approach produce an unexpected or superior technical effect
+
+Be highly specific and technical. Reference real software patterns, data structures, and algorithms.
+
+Respond with valid JSON:
+{
+  "layer2": "<2-3 paragraphs of architectural detail>",
+  "layer3": "<2-3 paragraphs describing the inventive mechanism and its surprising technical effect>",
+  "patentabilityHint": "<1-2 sentences on why Layer 3 is patentable>"
+}`;
+
+export function buildLayerDrillUserPrompt(data: {
+  principleName: string;
+  principleDescription: string;
+  improvingParam?: string;
+  worseningParam?: string;
+  layer1Text: string;
+  ideaContext?: string;
+}): string {
+  return `Drill down from an obvious application to an inventive mechanism:
+
+**Inventive Principle:** #${data.principleName}
+**Principle Description:** ${data.principleDescription}
+${data.improvingParam ? `**Improving Parameter:** ${data.improvingParam}` : ""}
+${data.worseningParam ? `**Worsening Parameter:** ${data.worseningParam}` : ""}
+${data.ideaContext ? `**Idea Context:** ${data.ideaContext}` : ""}
+
+**Layer 1 (Obvious Application — provided by engineer):**
+${data.layer1Text}
+
+Now drill deeper:
+- Layer 2: What specific data structures, algorithms, or protocols would make this concrete? What architectural decisions are needed?
+- Layer 3: What is the non-obvious technical trick? What mechanism produces a surprising technical effect that a skilled engineer wouldn't expect?`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ALICE / 101 PRE-SCREEN (Quick Checklist)
+// ═══════════════════════════════════════════════════════════════
+
+export const ALICE_PRESCREEN_SYSTEM_PROMPT = `You are a patent eligibility expert. Given a Layer 3 invention description, evaluate it against the 4 Alice/Section 101 pre-screen questions.
+
+For each question, provide:
+- answer: true/false
+- reasoning: 1-2 sentences explaining why
+
+Then provide an overall verdict and a brief recommendation for strengthening the invention.
+
+Respond with valid JSON:
+{
+  "technicalProblem": { "answer": <bool>, "reasoning": "<why>" },
+  "specificSolution": { "answer": <bool>, "reasoning": "<why>" },
+  "technicalImprovement": { "answer": <bool>, "reasoning": "<why>" },
+  "notConventional": { "answer": <bool>, "reasoning": "<why>" },
+  "score": <0-4>,
+  "verdict": "<strong|promising|risky|abstract>",
+  "recommendation": "<1-2 sentences on how to strengthen>"
+}`;
+
+export function buildAlicePreScreenUserPrompt(data: {
+  layer3Text: string;
+  ideaTitle?: string;
+  ideaContext?: string;
+}): string {
+  return `Evaluate this invention against the Alice/Section 101 pre-screen:
+
+${data.ideaTitle ? `**Idea:** ${data.ideaTitle}` : ""}
+${data.ideaContext ? `**Context:** ${data.ideaContext}` : ""}
+
+**Layer 3 Invention Description:**
+${data.layer3Text}
+
+Answer these 4 questions:
+1. Does it solve a TECHNICAL problem (not just a business problem)?
+2. Is the solution SPECIFIC — tied to particular data structures, algorithms, or system architecture?
+3. Does it improve COMPUTER FUNCTIONALITY itself (speed, efficiency, security, reliability)?
+4. Is the implementation NON-CONVENTIONAL — not just applying a known technique in a standard way?`;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // FRAMEWORK COACHING
 // ═══════════════════════════════════════════════════════════════
 

@@ -172,11 +172,35 @@ export interface PatentReport {
   nextSteps: string[];
 }
 
+export interface LayerDrillState {
+  principleId: number;
+  layer1: string;  // Obvious description (NOT PATENTABLE)
+  layer2: string;  // Architectural detail (MAYBE PATENTABLE)
+  layer3: string;  // Inventive mechanism (INVENTION CANDIDATE)
+}
+
+export interface AlicePreScreenChecklist {
+  technicalProblem: boolean;   // Does it solve a technical problem?
+  specificSolution: boolean;   // Is the solution specific (not abstract)?
+  technicalImprovement: boolean; // Does it improve computer functionality?
+  notConventional: boolean;    // Is the implementation non-conventional?
+  score: number;               // 0-4 count of true values
+  verdict: "strong" | "promising" | "risky" | "abstract";
+}
+
+export interface InventorInfo {
+  name: string;
+  department: string;
+  email: string;
+}
+
 export interface TRIZData {
   improving: string;
   worsening: string;
   principles: number[];
   resolution: string;
+  layerDrills?: LayerDrillState[];
+  alicePreScreen?: AlicePreScreenChecklist;
 }
 
 export interface SITData {

@@ -8,6 +8,8 @@ import {
   REFINE_SYSTEM_PROMPT, buildRefineUserPrompt,
   INVENTIVE_STEP_SYSTEM_PROMPT, buildInventiveStepUserPrompt,
   MARKET_NEEDS_SYSTEM_PROMPT, buildMarketNeedsUserPrompt,
+  LAYER_DRILL_SYSTEM_PROMPT, buildLayerDrillUserPrompt,
+  ALICE_PRESCREEN_SYSTEM_PROMPT, buildAlicePreScreenUserPrompt,
 } from "@/lib/prompts";
 
 /**
@@ -144,6 +146,37 @@ export function useAI() {
     };
   }
 
+  function drillLayers(req: {
+    principleName: string;
+    principleDescription: string;
+    layer1Text: string;
+    improvingParam?: string;
+    worseningParam?: string;
+    ideaContext?: string;
+  }): PromptDescriptor {
+    return {
+      featureName: "3-Layer Patent Drill",
+      systemPrompt: LAYER_DRILL_SYSTEM_PROMPT,
+      userPrompt: buildLayerDrillUserPrompt(req),
+      responseFormatHint:
+        'Paste the JSON response. Expected shape: { "layer2": "...", "layer3": "...", "patentabilityHint": "..." }',
+    };
+  }
+
+  function alicePreScreen(req: {
+    layer3Text: string;
+    ideaTitle?: string;
+    ideaContext?: string;
+  }): PromptDescriptor {
+    return {
+      featureName: "Alice / 101 Pre-Screen",
+      systemPrompt: ALICE_PRESCREEN_SYSTEM_PROMPT,
+      userPrompt: buildAlicePreScreenUserPrompt(req),
+      responseFormatHint:
+        'Paste the JSON response. Expected shape: { "technicalProblem": { "answer": true/false, "reasoning": "..." }, "specificSolution": { ... }, "technicalImprovement": { ... }, "notConventional": { ... }, "score": 0-4, "verdict": "strong"|"promising"|"risky"|"abstract", "recommendation": "..." }',
+    };
+  }
+
   return {
     ideate,
     scoreAlice,
@@ -152,5 +185,7 @@ export function useAI() {
     redTeam,
     analyzeInventiveStep,
     analyzeMarketNeeds,
+    drillLayers,
+    alicePreScreen,
   };
 }

@@ -19,7 +19,8 @@ import { SITWorksheet } from "@/components/frameworks/SITWorksheet";
 import { CKWorksheet } from "@/components/frameworks/CKWorksheet";
 import { FMEAInversion } from "@/components/frameworks/FMEAInversion";
 import { AIPromptModal } from "@/components/ai/AIPromptModal";
-import { getStatusColor, getTotalScore, getScoreVerdict, timeAgo, getAliceRiskColor } from "@/lib/utils";
+import { ExportPDFModal } from "./ExportPDFModal";
+import { getStatusColor, getTotalScore, getScoreVerdict, timeAgo, getAliceRiskColor, getIdeaProgress } from "@/lib/utils";
 
 interface IdeaDetailProps {
   idea: Idea;
@@ -69,6 +70,8 @@ export function IdeaDetail({ idea }: IdeaDetailProps) {
   const removeIdea = useIdeaStore((s) => s.removeIdea);
   const [activeTab, setActiveTab] = useState("overview");
   const [editing, setEditing] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const progress = getIdeaProgress(idea);
 
   const update = useCallback(
     (updates: Partial<Idea>) => {
@@ -120,6 +123,9 @@ export function IdeaDetail({ idea }: IdeaDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2 ml-4 shrink-0">
+            <Button variant="accent" size="sm" onClick={() => setShowExportModal(true)}>
+              Export PDF {progress.percent < 100 ? `(${progress.percent}%)` : ""}
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)}>
               {editing ? "Done" : "Edit"}
             </Button>
@@ -270,6 +276,15 @@ export function IdeaDetail({ idea }: IdeaDetailProps) {
           </dl>
         </Card>
       </div>
+
+      {/* Export PDF Modal */}
+      {showExportModal && (
+        <ExportPDFModal
+          open={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          idea={idea}
+        />
+      )}
     </div>
   );
 }
