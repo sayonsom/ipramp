@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Idea, IdeaScore, RedTeamResult, FrameworkType, ClaimDraft } from "@/lib/types";
+import type { Idea, IdeaScore, RedTeamResult, FrameworkType, ClaimDraft, MarketNeedsAnalysis } from "@/lib/types";
 import { useIdeaStore } from "@/lib/store";
 import { useAI, type PromptDescriptor } from "@/hooks/useAI";
 import { useDebouncedField } from "@/hooks/useDebouncedField";
@@ -851,8 +851,9 @@ function PriorArtNotesEditor({ idea, update }: { idea: Idea; update: (u: Partial
 // ─── Patent Filing Tab ────────────────────────────────────────
 
 function PatentFilingTab({ idea, update }: { idea: Idea; update: (u: Partial<Idea>) => void }) {
-  const { analyzeInventiveStep } = useAI();
+  const { analyzeInventiveStep, analyzeMarketNeeds } = useAI();
   const [prompt, setPrompt] = useState<PromptDescriptor | null>(null);
+  const [activePromptTarget, setActivePromptTarget] = useState<"inventive" | "market" | null>(null);
 
   function handleAnalyzeInventiveStep() {
     const desc = analyzeInventiveStep({
@@ -862,15 +863,29 @@ function PatentFilingTab({ idea, update }: { idea: Idea; update: (u: Partial<Ide
       technicalApproach: idea.technicalApproach,
       existingApproach: idea.existingApproach,
     });
+    setActivePromptTarget("inventive");
+    setPrompt(desc);
+  }
+
+  function handleAnalyzeMarketNeeds() {
+    const desc = analyzeMarketNeeds({
+      title: idea.title,
+      problemStatement: idea.problemStatement,
+      proposedSolution: idea.proposedSolution,
+      technicalApproach: idea.technicalApproach,
+      techStack: idea.techStack,
+    });
+    setActivePromptTarget("market");
     setPrompt(desc);
   }
 
   const hasInventiveStep = !!idea.inventiveStepAnalysis;
+  const hasMarketNeeds = !!idea.marketNeedsAnalysis;
 
   return (
     <div className="space-y-6">
       <p className="text-sm text-neutral-dark">
-        Analyze the inventive step of your idea to strengthen your patent filing strategy.
+        Analyze the inventive step and market potential of your idea to strengthen your patent filing strategy.
       </p>
 
       {/* Inventive Step Section */}
@@ -902,22 +917,120 @@ function PatentFilingTab({ idea, update }: { idea: Idea; update: (u: Partial<Ide
         )}
       </div>
 
+      {/* Market Needs Section */}
+      <div className="space-y-3 pt-4 border-t border-border">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            Market Needs Analysis
+          </h4>
+          <Button
+            variant="accent"
+            size="sm"
+            onClick={handleAnalyzeMarketNeeds}
+            disabled={!idea.problemStatement}
+          >
+            {hasMarketNeeds ? "Re-analyze Market" : "Analyze Market Needs"}
+          </Button>
+        </div>
+        {!idea.problemStatement && (
+          <p className="text-[10px] text-text-muted">Add a problem statement in the Overview tab first.</p>
+        )}
+        {hasMarketNeeds && <MarketNeedsCard analysis={idea.marketNeedsAnalysis!} />}
+        {!hasMarketNeeds && (
+          <div className="py-6 text-center rounded-lg border border-dashed border-border">
+            <p className="text-sm text-neutral-dark">No market analysis yet.</p>
+            <p className="text-xs text-text-muted mt-1">
+              Click &quot;Analyze Market Needs&quot; to assess commercial potential and strategic value.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* AI Prompt Modal */}
       {prompt && (
         <AIPromptModal
           open
-          onClose={() => setPrompt(null)}
+          onClose={() => { setPrompt(null); setActivePromptTarget(null); }}
           featureName={prompt.featureName}
           systemPrompt={prompt.systemPrompt}
           userPrompt={prompt.userPrompt}
           responseFormatHint={prompt.responseFormatHint}
           onApply={(parsed) => {
             if (parsed && typeof parsed === "object") {
-              update({ inventiveStepAnalysis: parsed as Idea["inventiveStepAnalysis"] });
+              if (activePromptTarget === "inventive") {
+                update({ inventiveStepAnalysis: parsed as Idea["inventiveStepAnalysis"] });
+              } else if (activePromptTarget === "market") {
+                update({ marketNeedsAnalysis: parsed as MarketNeedsAnalysis });
+              }
             }
           }}
         />
       )}
+    </div>
+  );
+}
+
+function MarketNeedsCard({ analysis }: { analysis: MarketNeedsAnalysis }) {
+  return (
+    <div className="space-y-3">
+      <Card>
+        <h4 className="text-sm font-medium text-ink mb-2">Market Size & Opportunity</h4>
+        <p className="text-sm text-neutral-dark whitespace-pre-wrap">{analysis.marketSize}</p>
+      </Card>
+
+      {analysis.targetSegments.length > 0 && (
+        <Card>
+          <h4 className="text-sm font-medium text-ink mb-2">Target Segments</h4>
+          <div className="flex flex-wrap gap-1.5">
+            {analysis.targetSegments.map((seg, i) => (
+              <Badge key={i} variant="outline">{seg}</Badge>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {analysis.painPointsSolved.length > 0 && (
+        <Card>
+          <h4 className="text-sm font-medium text-ink mb-2">Pain Points Solved</h4>
+          <ul className="space-y-1">
+            {analysis.painPointsSolved.map((pain, i) => (
+              <li key={i} className="text-xs text-neutral-dark flex items-start gap-2">
+                <span className="text-green-500 shrink-0 mt-0.5">&#10003;</span>
+                {pain}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      <Card>
+        <h4 className="text-sm font-medium text-ink mb-2">Competitive Landscape</h4>
+        <p className="text-sm text-neutral-dark whitespace-pre-wrap">{analysis.competitiveLandscape}</p>
+      </Card>
+
+      <Card>
+        <h4 className="text-sm font-medium text-ink mb-2">Commercialization Potential</h4>
+        <p className="text-sm text-neutral-dark whitespace-pre-wrap">{analysis.commercializationPotential}</p>
+      </Card>
+
+      {analysis.licensingOpportunities.length > 0 && (
+        <Card>
+          <h4 className="text-sm font-medium text-ink mb-2">Licensing Opportunities</h4>
+          <ul className="space-y-1">
+            {analysis.licensingOpportunities.map((opp, i) => (
+              <li key={i} className="text-xs text-neutral-dark flex items-start gap-2">
+                <span className="text-blue-ribbon shrink-0">&#8226;</span>
+                {opp}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      <Card>
+        <h4 className="text-sm font-medium text-ink mb-2">Strategic Patent Value</h4>
+        <p className="text-sm text-neutral-dark whitespace-pre-wrap">{analysis.strategicValue}</p>
+      </Card>
     </div>
   );
 }

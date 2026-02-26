@@ -7,6 +7,7 @@ import {
   RED_TEAM_SYSTEM_PROMPT, buildRedTeamUserPrompt,
   REFINE_SYSTEM_PROMPT, buildRefineUserPrompt,
   INVENTIVE_STEP_SYSTEM_PROMPT, buildInventiveStepUserPrompt,
+  MARKET_NEEDS_SYSTEM_PROMPT, buildMarketNeedsUserPrompt,
 } from "@/lib/prompts";
 
 /**
@@ -127,6 +128,22 @@ export function useAI() {
     };
   }
 
+  function analyzeMarketNeeds(req: {
+    title: string;
+    problemStatement: string;
+    proposedSolution: string;
+    technicalApproach: string;
+    techStack?: string[];
+  }): PromptDescriptor {
+    return {
+      featureName: "Market Needs Analysis",
+      systemPrompt: MARKET_NEEDS_SYSTEM_PROMPT,
+      userPrompt: buildMarketNeedsUserPrompt(req),
+      responseFormatHint:
+        'Paste the JSON response. Expected shape: { marketSize, targetSegments, painPointsSolved, competitiveLandscape, commercializationPotential, licensingOpportunities, strategicValue }',
+    };
+  }
+
   return {
     ideate,
     scoreAlice,
@@ -134,5 +151,6 @@ export function useAI() {
     refine,
     redTeam,
     analyzeInventiveStep,
+    analyzeMarketNeeds,
   };
 }

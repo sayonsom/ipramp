@@ -17,6 +17,8 @@ const STAGE_TO_TAB: Record<string, string> = {
   alice: "overview",
   "prior-art": "prior-art",
   claims: "claims",
+  "inventive-step": "patent-filing",
+  "market-needs": "patent-filing",
   "red-team": "red-team",
 };
 

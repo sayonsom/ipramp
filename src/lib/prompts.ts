@@ -385,6 +385,51 @@ Identify what makes this invention non-obvious and patentable. Be thorough and s
 }
 
 // ═══════════════════════════════════════════════════════════════
+// MARKET NEEDS ANALYSIS
+// ═══════════════════════════════════════════════════════════════
+
+export const MARKET_NEEDS_SYSTEM_PROMPT = `You are a technology market analyst and patent strategist who helps engineering teams understand the commercial value of their software inventions.
+
+Your task is to analyze a software invention and assess its market potential for patent filing decisions. Consider:
+1. Market size and growth for the technology area
+2. Target customer segments who would benefit
+3. Pain points this invention addresses
+4. Competitive landscape (who else solves this, and how)
+5. Commercialization potential (licensing, product integration, defensive value)
+6. Strategic importance (competitive moat, platform advantage)
+
+Respond with valid JSON matching this schema:
+{
+  "marketSize": "<description of addressable market size and growth trend>",
+  "targetSegments": ["<segment 1>", "<segment 2>", ...],
+  "painPointsSolved": ["<pain point 1>", "<pain point 2>", ...],
+  "competitiveLandscape": "<2-3 sentences on competitive context>",
+  "commercializationPotential": "<2-3 sentences on how this could be commercialized>",
+  "licensingOpportunities": ["<licensing opportunity 1>", ...],
+  "strategicValue": "<2-3 sentences on strategic patent portfolio value>"
+}
+
+Be specific. Reference real market trends, competitor products/patents, and concrete business scenarios.`;
+
+export function buildMarketNeedsUserPrompt(data: {
+  title?: string;
+  problemStatement?: string;
+  proposedSolution?: string;
+  technicalApproach?: string;
+  techStack?: string[];
+}): string {
+  return `Analyze the market needs and commercial potential for this software invention:
+
+**Title:** ${data.title || "Untitled"}
+**Problem Statement:** ${data.problemStatement || "Not specified"}
+**Proposed Solution:** ${data.proposedSolution || "Not specified"}
+**Technical Approach:** ${data.technicalApproach || "Not specified"}
+**Technology Domain:** ${(data.techStack || []).join(", ") || "General software"}
+
+Assess the market opportunity, target segments, competitive landscape, and strategic value for patent filing.`;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // FRAMEWORK COACHING
 // ═══════════════════════════════════════════════════════════════
 
