@@ -1,0 +1,134 @@
+/* ─── Custom Fonts ───────────────────────────────────────────── */
+
+/* Bower — serif display font (bold only) */
+@font-face {
+  font-family: "Bower";
+  src: url("/fonts/Bower/Bower-Bold/Web Fonts/40fccfffa7bc57048f06f7420d6fe7ae.woff2") format("woff2"),
+       url("/fonts/Bower/Bower-Bold/Web Fonts/40fccfffa7bc57048f06f7420d6fe7ae.woff") format("woff"),
+       url("/fonts/Bower/Bower-Bold/Web Fonts/40fccfffa7bc57048f06f7420d6fe7ae.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Zalando Sans — variable font (weight 200-900, width 75%-125%)
+   Replaces McKinsey Sans which only had a single Regular weight.
+   Now font-light/font-normal/font-medium/font-semibold/font-bold
+   all render with genuine, optically-correct glyph outlines. */
+@font-face {
+  font-family: "Zalando Sans";
+  src: url("/fonts/Zalando_Sans/ZalandoSans-Variable.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zalando Sans";
+  src: url("/fonts/Zalando_Sans/ZalandoSans-Italic-Variable.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Font families */
+  --font-serif: "Bower", Georgia, serif;
+  --font-sans: "Zalando Sans", Arial, Helvetica, sans-serif;
+
+  /* Series colors for charts/data viz */
+  --series-1: #051C2C;
+  --series-2: #2251FF;
+  --series-3: #163E93;
+  --series-4: #30A3DA;
+  --series-5: #053259;
+  --series-6: #BFAE5A;
+  --series-7: #D9C666;
+  --series-8: #A2AAAD;
+}
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html,
+  body {
+    @apply min-h-screen antialiased;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    @apply bg-white text-ink;
+  }
+
+  ::selection {
+    @apply bg-blue-ribbon/20 text-ink;
+  }
+
+  /* Scrollbar — subtle for light theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-light/60 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-light;
+  }
+
+  /* Form element base styling */
+  input,
+  textarea,
+  select {
+    font-family: var(--font-sans);
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply outline-none ring-1 ring-blue-ribbon border-blue-ribbon;
+  }
+
+  button {
+    font-family: var(--font-sans);
+    @apply cursor-pointer;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  /* Typography — Bower serif for major headings, Zalando Sans for sub-headings */
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+    @apply text-ink;
+  }
+
+  h4, h5, h6 {
+    font-family: var(--font-sans);
+    @apply text-ink;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+}
